@@ -1,0 +1,45 @@
+name: Publish WildRift Data to Github Pages
+
+on:
+  push:
+    branches: -main
+  schedule:
+    # Run every night at 00:00 UTC
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+env:
+  CI: true
+
+jobs:
+  publish-data:
+    runs-on: ubuntu-20.04
+    timeout-minutes: 30
+    steps:
+      # Step 1
+      - name: checkout code
+        uses: actions/checkout@v3
+      # Step 2
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'
+      # Step 3: Run the JavaScript script from dist/ directory
+      - name: Run script
+        run: node dist/update.js || node dist/update.js || node dist/update.js
+      # Step 4: Push public/ to gh-pages
+      - name: Push public/ to gh-pages and Deploy pages to Github Pages
+        run: |
+          git config user.name $GITHUB_ACTOR
+          git config user.email $GITHUB_ACTOR@users.noreply.github.com
+          git remote add gh-pages-remote https://x-access-token:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY.git
+          git worktree add ./gh-pages gh-pages
+          cd gh-pages
+          git rm -r .
+          cp -r ../public/. .
+          git add .
+          git commit --message="Deploying to GitHub Pages from $GITHUB_SHA"
+          git push gh-pages-remote gh-pages:gh-pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
