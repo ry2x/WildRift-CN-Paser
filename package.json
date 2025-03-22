@@ -2,10 +2,11 @@
   "name": "wildrift-cn-parser",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "scripts": {
     "test": "tsx src/update.ts",
     "compile": "tsc",
-    "main": "node dist/update.ts"
+    "main": "node dist/update.js"
   },
   "keywords": [],
   "author": "",

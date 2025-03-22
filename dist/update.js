@@ -1,20 +1,15 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const axios_1 = __importDefault(require("axios"));
-const fs_1 = require("fs");
-const path_1 = require("path");
+import axios from 'axios';
+import { readFileSync, mkdirSync, writeFileSync } from 'fs';
+import { join } from 'path';
 const __dirname = process.cwd();
-const config = JSON.parse((0, fs_1.readFileSync)((0, path_1.join)(__dirname, 'config.json'), 'utf8'));
+const config = JSON.parse(readFileSync(join(__dirname, 'config.json'), 'utf8'));
 const extractChampionNameFromPoster = (posterUrl) => {
     const match = posterUrl.match(/\/([A-Za-z]+)_\d+\.jpg$/);
     return match ? match[1] : null;
 };
 async function fetchData(url) {
     try {
-        return await axios_1.default.get(url);
+        return await axios.get(url);
     }
     catch (err) {
         console.error('Failed to fetch cn api', err);
@@ -65,7 +60,7 @@ async function exportData() {
 }
 async function createOutDir() {
     try {
-        (0, fs_1.mkdirSync)(config.folderName, { recursive: true });
+        mkdirSync(config.folderName, { recursive: true });
         console.log('Created Folder to out put');
     }
     catch (err) {
@@ -74,7 +69,7 @@ async function createOutDir() {
 }
 async function outPutJson(data) {
     try {
-        (0, fs_1.writeFileSync)('public/hero.json', JSON.stringify(data, null, 2), 'utf-8');
+        writeFileSync('public/hero.json', JSON.stringify(data, null, 2), 'utf-8');
         console.log('Successfully out putting');
     }
     catch (err) {

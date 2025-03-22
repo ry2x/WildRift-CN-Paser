@@ -1,5 +1,5 @@
-import axios from 'axios';
-import { Champions, Config, HeroData, MergedChamp, Champion } from './types';
+import axios, { AxiosResponse } from 'axios';
+import { Champions, Config, HeroData, MergedChamp, Champion } from './types.js';
 import { readFileSync, mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 
@@ -13,7 +13,7 @@ const extractChampionNameFromPoster = (posterUrl: string): string | null => {
   return match ? match[1] : null;
 };
 
-async function fetchData<t>(url: string): Promise<axios.AxiosResponse<t, any>> {
+async function fetchData<T>(url: string): Promise<AxiosResponse<T>> {
   try {
     return await axios.get(url);
   } catch (err) {
