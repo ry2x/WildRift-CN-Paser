@@ -48,12 +48,12 @@ jobs:
           cd gh-pages
           git rm -r .
           cp -r ../public/. .
+          git add .
           # Is there change?
           if git diff --quiet HEAD; then
               echo "No changes detected Skipping push."
               exit 0
           fi
-          git add .
           git commit --message="Deploying to GitHub Pages from $GITHUB_SHA"
           git push gh-pages-remote gh-pages:gh-pages
         env:
