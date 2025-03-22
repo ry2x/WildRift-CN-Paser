@@ -8,8 +8,12 @@
     "ignoreDeprecations": "5.0",
     "target": "ES2022",
     "esModuleInterop": true,
-    "incremental": true,
-    "removeComments": true
+    "removeComments": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true
   },
   "exclude": ["test"]
 }
