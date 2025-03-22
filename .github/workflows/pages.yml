@@ -42,16 +42,7 @@ jobs:
           git config user.name $GITHUB_ACTOR
           git config user.email $GITHUB_ACTOR@users.noreply.github.com
           git remote add gh-pages-remote https://x-access-token:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY.git
-
-          # Create gh-pages branch if it doesn't exist
-          if ! git show-ref --verify --quiet refs/heads/gh-pages; then
-            git checkout --orphan gh-pages
-            git rm -rf .
-            touch .gitkeep
-            git add .gitkeep
-            git commit -m "Initial gh-pages branch"
-            git push gh-pages-remote gh-pages
-          fi
+          git fetch --no-recurse-submodules
 
           # Set up worktree and deploy
           git worktree add ./gh-pages gh-pages || true
