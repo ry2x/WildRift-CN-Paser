@@ -1,3 +1,4 @@
+//cn
 export type Hero = {
   heroId: string;
   name: string;
@@ -55,6 +56,7 @@ export interface MergedChamp {
   hero_id: number;
 }
 
+//jp
 export interface Champion {
   id: string;
   key: number;
@@ -78,4 +80,10 @@ export interface Champion {
 
 export interface Champions {
   [key: string]: Champion;
+}
+
+export interface Config {
+  urlCN: string;
+  urlChamp: string;
+  folderName: string;
 }
