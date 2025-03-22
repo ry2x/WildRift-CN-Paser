@@ -48,10 +48,11 @@ jobs:
           git worktree add ./gh-pages gh-pages || true
           cd gh-pages
           git rm -r .
-
           cp -r ../public/. .
-          if git diff --quiet HEAD -- hero.json; then
-              echo "No changes detected in hero.json. Skipping push."
+
+          # public/ ディレクトリ全体に変更があるか確認
+          if git diff --quiet HEAD -- .; then
+              echo "No changes detected Skipping push."
               exit 0
           fi
 
