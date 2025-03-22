@@ -25,6 +25,14 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '22'
+      # Step 2.1: Setup pnpm
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      # Step 2.2: Install dependencies
+      - name: Install dependencies
+        run: pnpm install
       # Step 3: Run the JavaScript script from dist/ directory
       - name: Run script
         run: node dist/update.js || node dist/update.js || node dist/update.js
