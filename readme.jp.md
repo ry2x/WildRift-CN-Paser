@@ -96,7 +96,50 @@ type HeroData = {
 };
 ```
 
----
+- 勝率データ (❌このリポジトリでは使用されていません): `https://mlol.qt.qq.com/go/lgame_battle_info/hero_rank_list_v2`
+
+  - 構造:  
+
+```ts
+// 勝率に関する主要情報
+interface HeroStats {
+  id: number;
+  position: string; // ポジション
+  hero_id: string; // チャンピオンID
+  strength: string; // 強さの値
+  weight: string;
+  appear_rate: string; // 出現率
+  appear_bzc: string;
+  forbid_rate: string; // 禁止率
+  forbid_bzc: string;
+  win_rate: string; // 勝率
+  win_bzc: string;
+  dtstatdate: string; // データの日付
+  strength_level: string; // 強さのレベル
+  appear_rate_float: string;
+  forbid_rate_float: string;
+  win_rate_float: string;
+  appear_rate_percent: string; // 出現率（％）
+  forbid_rate_percent: string; // 禁止率（％）
+  win_rate_percent: string; // 勝率（％）
+}
+
+// 各レーンに関するデータ
+interface PositionStats {
+  [key: string]: HeroStats[]; // キーはレーン名、値はそのレーンのHeroStatsの配列
+}
+
+// 全データの構造
+interface Data {
+  [key: string]: PositionStats; // キーはカテゴリ、値はPositionStats
+}
+
+// API構造
+interface JsonStructure {
+  result: number; // 結果コード
+  data: Data; // 勝率データ
+}
+```
 
 ## 収集したチャンピオンデータ（日本語）のURLと構造
 
