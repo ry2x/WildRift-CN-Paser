@@ -3,11 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "parse": "tsx src/parse.ts",
-    "merge": "tsx src/merge.ts",
-    "main": "tsx src/main.ts",
-    "update": "tsx src/update.ts",
-    "compile": "tsc"
+    "test": "tsx src/update.ts",
+    "compile": "tsc",
+    "main": "node dist/update.ts"
   },
   "keywords": [],
   "author": "",
