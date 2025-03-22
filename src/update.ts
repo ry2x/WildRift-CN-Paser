@@ -81,7 +81,7 @@ async function createOutDir() {
 
 async function outPutJson(data: MergedChamp[]) {
   try {
-    writeFileSync('public/hero.json', JSON.stringify(data, null, 2), 'utf-8');
+    writeFileSync('public/hero.json', JSON.stringify(data), 'utf-8');
     console.log('Successfully out putting');
   } catch (err) {
     console.error('Failed to out put JSON', err);

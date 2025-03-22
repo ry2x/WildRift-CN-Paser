@@ -69,7 +69,7 @@ async function createOutDir() {
 }
 async function outPutJson(data) {
     try {
-        writeFileSync('public/hero.json', JSON.stringify(data, null, 2), 'utf-8');
+        writeFileSync('public/hero.json', JSON.stringify(data), 'utf-8');
         console.log('Successfully out putting');
     }
     catch (err) {
