@@ -2,7 +2,7 @@ name: Publish WildRift Data to Github Pages
 
 on:
   push:
-    branches: -main
+    branches: -master
   schedule:
     # Run every night at 00:00 UTC
     - cron: '0 0 * * *'
