@@ -32,7 +32,7 @@ jobs:
           version: 8
       # Step 2.2: Install dependencies
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --production
       # Step 3: Run the JavaScript script from dist/ directory
       - name: Run script
         run: node dist/update.js || node dist/update.js || node dist/update.js
