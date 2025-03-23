@@ -1,5 +1,7 @@
 # WildRift Champion Data
 
+> 日本語のREADMEは[ここ](https://github.com/ry2x/WildRift-Champs/blob/master/readme.jp.md)から確認できます。
+
 > This repository has no static information about WildRift Champs
 
 You can check champion data in [gh-pages](https://github.com/ry2x/WildRift-Champs/tree/gh-pages) branch.
