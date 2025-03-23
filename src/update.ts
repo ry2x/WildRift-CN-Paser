@@ -13,6 +13,17 @@ const extractChampionNameFromPoster = (posterUrl: string): string | null => {
   return match ? match[1] : null;
 };
 
+const parseLaneInfo = (lane: string) => {
+  const lanes = lane.split(';');
+  return {
+    is_mid: lanes.includes('中路'),
+    is_jg: lanes.includes('打野'),
+    is_top: lanes.includes('单人路'),
+    is_sup: lanes.includes('辅助'),
+    is_ad: lanes.includes('双人路'),
+  };
+};
+
 async function fetchData<T>(url: string): Promise<AxiosResponse<T>> {
   try {
     return await axios.get(url);
@@ -38,6 +49,7 @@ async function exportData(): Promise<MergedChamp[]> {
     );
 
     if (hero) {
+      const laneInfo = parseLaneInfo(cnHero.lane);
       const mergedChampion: MergedChamp = {
         id: hero.id,
         key: hero.key,
@@ -52,11 +64,11 @@ async function exportData(): Promise<MergedChamp[]> {
         is_tank: hero.is_tank,
         type: hero.type,
         is_wr: hero.is_wr,
-        is_mid: hero.is_mid,
-        is_top: hero.is_top,
-        is_jg: hero.is_jg,
-        is_sup: hero.is_sup,
-        is_ad: hero.is_ad,
+        is_mid: laneInfo.is_mid,
+        is_top: laneInfo.is_top,
+        is_jg: laneInfo.is_jg,
+        is_sup: laneInfo.is_sup,
+        is_ad: laneInfo.is_ad,
         is_free: cnHero.isWeekFree === '1',
         difficult: Number(cnHero.difficultyL),
         damage: Number(cnHero.damage),
