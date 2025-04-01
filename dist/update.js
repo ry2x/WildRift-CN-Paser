@@ -14,7 +14,7 @@ const parseLaneInfo = (lane) => {
         is_jg: lanes.includes('打野'),
         is_top: lanes.includes('单人路'),
         is_sup: lanes.includes('辅助'),
-        is_ad: lanes.includes('双人路'),
+        is_ad: lanes.includes('射手'),
     };
 };
 async function fetchData(url) {
@@ -30,13 +30,9 @@ async function exportData() {
     const cnData = await fetchData(config.urlCN);
     const jpData = await fetchData(config.urlChamp);
     const mergedHeroes = [];
-    for (const heroId in cnData.data.heroList) {
-        const cnHero = cnData.data.heroList[heroId];
-        const extractedName = extractChampionNameFromPoster(cnHero.poster);
-        if (!extractedName)
-            continue;
-        const hero = Object.values(jpData.data).find((h) => h.id === extractedName);
-        if (hero) {
+    for (const hero of Object.values(jpData.data)) {
+        const cnHero = Object.values(cnData.data.heroList).find((h) => extractChampionNameFromPoster(h.poster) === hero.id);
+        if (cnHero) {
             const laneInfo = parseLaneInfo(cnHero.lane);
             const mergedChampion = {
                 id: hero.id,
@@ -63,6 +59,35 @@ async function exportData() {
                 survive: Number(cnHero.surviveL),
                 utility: Number(cnHero.assistL),
                 hero_id: Number(cnHero.heroId),
+            };
+            mergedHeroes.push(mergedChampion);
+        }
+        else {
+            const mergedChampion = {
+                id: hero.id,
+                key: hero.key,
+                name: hero.name,
+                title: hero.title,
+                describe: hero.describe,
+                is_fighter: hero.is_fighter,
+                is_mage: hero.is_mage,
+                is_assassin: hero.is_assassin,
+                is_marksman: hero.is_marksman,
+                is_support: hero.is_support,
+                is_tank: hero.is_tank,
+                type: hero.type,
+                is_wr: hero.is_wr,
+                is_mid: hero.is_mid,
+                is_top: hero.is_top,
+                is_jg: hero.is_jg,
+                is_sup: hero.is_sup,
+                is_ad: hero.is_ad,
+                is_free: false,
+                difficult: 0,
+                damage: 0,
+                survive: 0,
+                utility: 0,
+                hero_id: 0,
             };
             mergedHeroes.push(mergedChampion);
         }
