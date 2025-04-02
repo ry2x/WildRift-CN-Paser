@@ -1,19 +1,47 @@
 import axios, { AxiosResponse } from 'axios';
-import { Champions, Config, HeroData, MergedChamp } from './types.js';
+import {
+  Champions,
+  Config,
+  HeroData,
+  MergedChamp,
+  LaneInfo,
+  Hero,
+} from './types.js';
 import { readFileSync, mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 
-const __dirname = process.cwd();
-const config = JSON.parse(
-  readFileSync(join(__dirname, 'config.json'), 'utf8')
-) as Config;
+// 定数の定義
+const CONFIG_PATH = 'config.json';
 
+// エラーメッセージの定義
+const ERROR_MESSAGES = {
+  CONFIG_READ: '設定ファイルの読み込みに失敗しました',
+  FOLDER_CREATE: '出力フォルダの作成に失敗しました',
+  DATA_FETCH: 'データの取得に失敗しました',
+  JSON_WRITE: 'JSONファイルの書き込みに失敗しました',
+} as const;
+
+// 設定の読み込み
+const loadConfig = (): Config => {
+  try {
+    const configPath = join(process.cwd(), CONFIG_PATH);
+    return JSON.parse(readFileSync(configPath, 'utf8')) as Config;
+  } catch (error) {
+    console.error(ERROR_MESSAGES.CONFIG_READ, error);
+    throw error;
+  }
+};
+
+const config = loadConfig();
+
+// ポスターURLからチャンピオン名を抽出
 const extractChampionNameFromPoster = (posterUrl: string): string | null => {
   const match = posterUrl.match(/\/([A-Za-z]+)_\d+\.jpg$/);
   return match ? match[1] : null;
 };
 
-const parseLaneInfo = (lane: string) => {
+// レーン情報のパース
+const parseLaneInfo = (lane: string): LaneInfo => {
   const lanes = lane.split(';');
   return {
     is_mid: lanes.includes('中路'),
@@ -24,111 +52,97 @@ const parseLaneInfo = (lane: string) => {
   };
 };
 
-async function fetchData<T>(url: string): Promise<AxiosResponse<T>> {
+// データの取得
+const fetchData = async <T>(url: string): Promise<AxiosResponse<T>> => {
   try {
-    return await axios.get(url);
-  } catch (err) {
-    console.error('Failed to fetch cn api', err);
-    throw err;
+    return await axios.get<T>(url);
+  } catch (error) {
+    console.error(ERROR_MESSAGES.DATA_FETCH, error);
+    throw error;
   }
-}
+};
 
-async function exportData(): Promise<MergedChamp[]> {
-  const cnData = await fetchData<HeroData>(config.urlCN);
-  const jpData = await fetchData<Champions>(config.urlChamp);
-  const mergedHeroes: MergedChamp[] = [];
-
-  for (const hero of Object.values(jpData.data)) {
-    const cnHero = Object.values(cnData.data.heroList).find(
-      (h) => extractChampionNameFromPoster(h.poster) === hero.id
-    );
-
-    if (cnHero) {
-      const laneInfo = parseLaneInfo(cnHero.lane);
-      const mergedChampion: MergedChamp = {
-        id: hero.id,
-        key: hero.key,
-        name: hero.name,
-        title: hero.title,
-        describe: hero.describe,
-        is_fighter: hero.is_fighter,
-        is_mage: hero.is_mage,
-        is_assassin: hero.is_assassin,
-        is_marksman: hero.is_marksman,
-        is_support: hero.is_support,
-        is_tank: hero.is_tank,
-        type: hero.type,
-        is_wr: hero.is_wr,
-        is_mid: laneInfo.is_mid,
-        is_top: laneInfo.is_top,
-        is_jg: laneInfo.is_jg,
-        is_sup: laneInfo.is_sup,
-        is_ad: laneInfo.is_ad,
-        is_free: cnHero.isWeekFree === '1',
-        difficult: Number(cnHero.difficultyL),
-        damage: Number(cnHero.damage),
-        survive: Number(cnHero.surviveL),
-        utility: Number(cnHero.assistL),
-        hero_id: Number(cnHero.heroId),
-      };
-      mergedHeroes.push(mergedChampion);
-    } else {
-      const mergedChampion: MergedChamp = {
-        id: hero.id,
-        key: hero.key,
-        name: hero.name,
-        title: hero.title,
-        describe: hero.describe,
-        is_fighter: hero.is_fighter,
-        is_mage: hero.is_mage,
-        is_assassin: hero.is_assassin,
-        is_marksman: hero.is_marksman,
-        is_support: hero.is_support,
-        is_tank: hero.is_tank,
-        type: hero.type,
-        is_wr: hero.is_wr,
+// チャンピオンデータのマージ
+const mergeChampionData = (
+  hero: Champions[keyof Champions],
+  cnHero: Hero | undefined
+): MergedChamp => {
+  const laneInfo = cnHero
+    ? parseLaneInfo(cnHero.lane)
+    : {
         is_mid: hero.is_mid,
         is_top: hero.is_top,
         is_jg: hero.is_jg,
         is_sup: hero.is_sup,
         is_ad: hero.is_ad,
-        is_free: false,
-        difficult: 0,
-        damage: 0,
-        survive: 0,
-        utility: 0,
-        hero_id: 0,
       };
-      mergedHeroes.push(mergedChampion);
-    }
-  }
-  return mergedHeroes;
-}
 
-async function createOutDir() {
+  return {
+    ...hero,
+    is_free: cnHero?.isWeekFree === '1',
+    difficult: cnHero ? Number(cnHero.difficultyL) : 0,
+    damage: cnHero ? Number(cnHero.damage) : 0,
+    survive: cnHero ? Number(cnHero.surviveL) : 0,
+    utility: cnHero ? Number(cnHero.assistL) : 0,
+    hero_id: cnHero ? Number(cnHero.heroId) : 0,
+    ...laneInfo,
+  };
+};
+
+// データのエクスポート
+const exportData = async (): Promise<MergedChamp[]> => {
+  try {
+    const [cnData, jpData] = await Promise.all([
+      fetchData<HeroData>(config.urlCN),
+      fetchData<Champions>(config.urlChamp),
+    ]);
+
+    return Object.values(jpData.data).map((hero) => {
+      const cnHero = Object.values(cnData.data.heroList).find(
+        (h) => extractChampionNameFromPoster(h.poster) === hero.id
+      );
+      return mergeChampionData(hero, cnHero);
+    });
+  } catch (error) {
+    console.error('データのエクスポートに失敗しました', error);
+    throw error;
+  }
+};
+
+// 出力ディレクトリの作成
+const createOutputDirectory = async (): Promise<void> => {
   try {
     mkdirSync(config.folderName, { recursive: true });
-    console.log('Created Folder to out put');
-  } catch (err) {
-    console.error('Failed to create folder', err);
+    console.log('出力フォルダを作成しました✨');
+  } catch (error) {
+    console.error(ERROR_MESSAGES.FOLDER_CREATE, error);
+    throw error;
   }
-}
+};
 
-async function outPutJson(data: MergedChamp[]) {
+// JSONファイルの出力
+const writeJsonFile = async (data: MergedChamp[]): Promise<void> => {
   try {
-    writeFileSync('public/hero.json', JSON.stringify(data), 'utf-8');
-    console.log('Successfully out putting');
-  } catch (err) {
-    console.error('Failed to out put JSON', err);
+    const outputPath = join(config.folderName, 'hero.json');
+    writeFileSync(outputPath, JSON.stringify(data, null, 2), 'utf-8');
+    console.log('JSONファイルの出力に成功しました✨');
+  } catch (error) {
+    console.error(ERROR_MESSAGES.JSON_WRITE, error);
+    throw error;
   }
-}
+};
 
-async function main() {
-  await createOutDir();
-  const data = await exportData();
-  await outPutJson(data);
-
-  console.log('Successfully creating JSON');
-}
+// メイン処理
+const main = async (): Promise<void> => {
+  try {
+    await createOutputDirectory();
+    const data = await exportData();
+    await writeJsonFile(data);
+    console.log('すべての処理が完了しました！🎉');
+  } catch (error) {
+    console.error('処理中にエラーが発生しました💦', error);
+    process.exit(1);
+  }
+};
 
 main();

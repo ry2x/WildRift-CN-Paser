@@ -1,8 +1,24 @@
 import axios from 'axios';
 import { readFileSync, mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
-const __dirname = process.cwd();
-const config = JSON.parse(readFileSync(join(__dirname, 'config.json'), 'utf8'));
+const CONFIG_PATH = 'config.json';
+const ERROR_MESSAGES = {
+    CONFIG_READ: '設定ファイルの読み込みに失敗しました',
+    FOLDER_CREATE: '出力フォルダの作成に失敗しました',
+    DATA_FETCH: 'データの取得に失敗しました',
+    JSON_WRITE: 'JSONファイルの書き込みに失敗しました',
+};
+const loadConfig = () => {
+    try {
+        const configPath = join(process.cwd(), CONFIG_PATH);
+        return JSON.parse(readFileSync(configPath, 'utf8'));
+    }
+    catch (error) {
+        console.error(ERROR_MESSAGES.CONFIG_READ, error);
+        throw error;
+    }
+};
+const config = loadConfig();
 const extractChampionNameFromPoster = (posterUrl) => {
     const match = posterUrl.match(/\/([A-Za-z]+)_\d+\.jpg$/);
     return match ? match[1] : null;
@@ -17,105 +33,83 @@ const parseLaneInfo = (lane) => {
         is_ad: lanes.includes('射手'),
     };
 };
-async function fetchData(url) {
+const fetchData = async (url) => {
     try {
         return await axios.get(url);
     }
-    catch (err) {
-        console.error('Failed to fetch cn api', err);
-        throw err;
+    catch (error) {
+        console.error(ERROR_MESSAGES.DATA_FETCH, error);
+        throw error;
     }
-}
-async function exportData() {
-    const cnData = await fetchData(config.urlCN);
-    const jpData = await fetchData(config.urlChamp);
-    const mergedHeroes = [];
-    for (const hero of Object.values(jpData.data)) {
-        const cnHero = Object.values(cnData.data.heroList).find((h) => extractChampionNameFromPoster(h.poster) === hero.id);
-        if (cnHero) {
-            const laneInfo = parseLaneInfo(cnHero.lane);
-            const mergedChampion = {
-                id: hero.id,
-                key: hero.key,
-                name: hero.name,
-                title: hero.title,
-                describe: hero.describe,
-                is_fighter: hero.is_fighter,
-                is_mage: hero.is_mage,
-                is_assassin: hero.is_assassin,
-                is_marksman: hero.is_marksman,
-                is_support: hero.is_support,
-                is_tank: hero.is_tank,
-                type: hero.type,
-                is_wr: hero.is_wr,
-                is_mid: laneInfo.is_mid,
-                is_top: laneInfo.is_top,
-                is_jg: laneInfo.is_jg,
-                is_sup: laneInfo.is_sup,
-                is_ad: laneInfo.is_ad,
-                is_free: cnHero.isWeekFree === '1',
-                difficult: Number(cnHero.difficultyL),
-                damage: Number(cnHero.damage),
-                survive: Number(cnHero.surviveL),
-                utility: Number(cnHero.assistL),
-                hero_id: Number(cnHero.heroId),
-            };
-            mergedHeroes.push(mergedChampion);
-        }
-        else {
-            const mergedChampion = {
-                id: hero.id,
-                key: hero.key,
-                name: hero.name,
-                title: hero.title,
-                describe: hero.describe,
-                is_fighter: hero.is_fighter,
-                is_mage: hero.is_mage,
-                is_assassin: hero.is_assassin,
-                is_marksman: hero.is_marksman,
-                is_support: hero.is_support,
-                is_tank: hero.is_tank,
-                type: hero.type,
-                is_wr: hero.is_wr,
-                is_mid: hero.is_mid,
-                is_top: hero.is_top,
-                is_jg: hero.is_jg,
-                is_sup: hero.is_sup,
-                is_ad: hero.is_ad,
-                is_free: false,
-                difficult: 0,
-                damage: 0,
-                survive: 0,
-                utility: 0,
-                hero_id: 0,
-            };
-            mergedHeroes.push(mergedChampion);
-        }
+};
+const mergeChampionData = (hero, cnHero) => {
+    const laneInfo = cnHero
+        ? parseLaneInfo(cnHero.lane)
+        : {
+            is_mid: hero.is_mid,
+            is_top: hero.is_top,
+            is_jg: hero.is_jg,
+            is_sup: hero.is_sup,
+            is_ad: hero.is_ad,
+        };
+    return {
+        ...hero,
+        is_free: cnHero?.isWeekFree === '1',
+        difficult: cnHero ? Number(cnHero.difficultyL) : 0,
+        damage: cnHero ? Number(cnHero.damage) : 0,
+        survive: cnHero ? Number(cnHero.surviveL) : 0,
+        utility: cnHero ? Number(cnHero.assistL) : 0,
+        hero_id: cnHero ? Number(cnHero.heroId) : 0,
+        ...laneInfo,
+    };
+};
+const exportData = async () => {
+    try {
+        const [cnData, jpData] = await Promise.all([
+            fetchData(config.urlCN),
+            fetchData(config.urlChamp),
+        ]);
+        return Object.values(jpData.data).map((hero) => {
+            const cnHero = Object.values(cnData.data.heroList).find((h) => extractChampionNameFromPoster(h.poster) === hero.id);
+            return mergeChampionData(hero, cnHero);
+        });
     }
-    return mergedHeroes;
-}
-async function createOutDir() {
+    catch (error) {
+        console.error('データのエクスポートに失敗しました', error);
+        throw error;
+    }
+};
+const createOutputDirectory = async () => {
     try {
         mkdirSync(config.folderName, { recursive: true });
-        console.log('Created Folder to out put');
+        console.log('出力フォルダを作成しました✨');
     }
-    catch (err) {
-        console.error('Failed to create folder', err);
+    catch (error) {
+        console.error(ERROR_MESSAGES.FOLDER_CREATE, error);
+        throw error;
     }
-}
-async function outPutJson(data) {
+};
+const writeJsonFile = async (data) => {
     try {
-        writeFileSync('public/hero.json', JSON.stringify(data), 'utf-8');
-        console.log('Successfully out putting');
+        const outputPath = join(config.folderName, 'hero.json');
+        writeFileSync(outputPath, JSON.stringify(data, null, 2), 'utf-8');
+        console.log('JSONファイルの出力に成功しました✨');
     }
-    catch (err) {
-        console.error('Failed to out put JSON', err);
+    catch (error) {
+        console.error(ERROR_MESSAGES.JSON_WRITE, error);
+        throw error;
     }
-}
-async function main() {
-    await createOutDir();
-    const data = await exportData();
-    await outPutJson(data);
-    console.log('Successfully creating JSON');
-}
+};
+const main = async () => {
+    try {
+        await createOutputDirectory();
+        const data = await exportData();
+        await writeJsonFile(data);
+        console.log('すべての処理が完了しました！🎉');
+    }
+    catch (error) {
+        console.error('処理中にエラーが発生しました💦', error);
+        process.exit(1);
+    }
+};
 main();
