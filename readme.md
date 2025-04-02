@@ -1,104 +1,108 @@
-# WildRift Champion Data
+# WildRift Champion Data 🎮
 
-> 日本語のREADMEは[ここ](https://github.com/ry2x/WildRift-Champs/blob/master/readme.jp.md)から確認できます。
+> English version is available [here](https://github.com/ry2x/WildRift-Champs/blob/master/readme.en.md)
 
-> This repository has no static information about WildRift Champs
+## 概要 📝
 
-You can check champion data in [gh-pages](https://github.com/ry2x/WildRift-Champs/tree/gh-pages) branch.
+このリポジトリは、WildRift のチャンピオンデータを管理しているよ！
+データは中国の API と[チャンピオンデータ](https://github.com/ry2x/wildrift_data)から取得して作られているんだ ✨
 
-The data is created from CN api and my [champion data](https://github.com/ry2x/wildrift_data).
+毎日 UTC 00:00 に新しいデータが公開されるよ！
 
-If you notice any errors in the data, please raise an [issue](https://github.com/ry2x/WildRift-Champs/issues) to inform us!
+## データの確認方法 🔍
 
-(You might also need to correct the JSON file in [a repository](https://github.com/ry2x/wildrift_data). Pull requests are always welcome!)
+チャンピオンデータは[gh-pages](https://github.com/ry2x/WildRift-Champs/tree/gh-pages)ブランチで確認できるよ！
 
-On every night at 00:00 UTC, new data will be published.
+## バグ報告 🐛
 
-## Use as API
+もしデータに誤りを見つけたら、[issue](https://github.com/ry2x/WildRift-Champs/issues)を立てて教えてね！
+（[このリポジトリ](https://github.com/ry2x/wildrift_data)の JSON ファイルも修正が必要かもしれないよ。PR はいつでも歓迎だよ！）
 
-- End point: `https://ry2x.github.io/WildRift-Champs/`
+## API としての使い方 🚀
+
+エンドポイント: `https://ry2x.github.io/WildRift-Champs/`
 
 ### hero.json
 
-`hero.json` has main information about champions in wildrift.
+チャンピオンの基本情報が入っている JSON ファイルだよ！
 
-- URL : `https://ry2x.github.io/WildRift-Champs/hero.json`
+- URL: `https://ry2x.github.io/WildRift-Champs/hero.json`
 
-- Structure :
+- データ構造:
 
 ```ts
 interface MergedChamp {
-  id: string; // champion id on LOL api
-  key: number; // champion key on LOL api
-  name: string; // champion name (jp)
-  title: string; // (jp)
-  describe: string; // (jp)
-  is_fighter: boolean; // tag-fighter
-  is_mage: boolean; // tag-mage
-  is_assassin: boolean; // tag-assassin
-  is_marksman: boolean; // tag-marksman
-  is_support: boolean; // tag-support
-  is_tank: boolean; // tag-tank
-  type: string; // mana type (jp)
-  is_wr: boolean; // available in wildrift?
-  is_mid: boolean;
-  is_top: boolean;
-  is_jg: boolean;
-  is_sup: boolean;
-  is_ad: boolean;
-  is_free: boolean; // free champion for week
-  difficult: number; // difficulty to use
-  damage: number; // extent of the damage
-  survive: number; // survivability
-  utility: number;
-  hero_id: number; // champion id on lolm api
+  id: string; // LOL APIのチャンピオンID
+  key: number; // LOL APIのチャンピオンキー
+  name: string; // チャンピオン名（日本語）
+  title: string; // タイトル（日本語）
+  describe: string; // 説明（日本語）
+  is_fighter: boolean; // ファイタータグ
+  is_mage: boolean; // メイジタグ
+  is_assassin: boolean; // アサシンタグ
+  is_marksman: boolean; // マークスマンタグ
+  is_support: boolean; // サポートタグ
+  is_tank: boolean; // タンクタグ
+  type: string; // マナタイプ（日本語）
+  is_wr: boolean; // WildRiftで利用可能か
+  is_mid: boolean; // ミッドレーン
+  is_top: boolean; // トップレーン
+  is_jg: boolean; // ジャングル
+  is_sup: boolean; // サポート
+  is_ad: boolean; // AD
+  is_free: boolean; // 今週の無料チャンピオン
+  difficult: number; // 難易度
+  damage: number; // ダメージ量
+  survive: number; // 生存能力
+  utility: number; // ユーティリティ
+  hero_id: number; // LOLM APIのチャンピオンID
 }
 ```
 
-## URL and structure of CN API
+## 中国 API の URL と構造 🇨🇳
 
-- Champions: `https://game.gtimg.cn/images/lgamem/act/lrlib/js/heroList/hero_list.js`
-   - Structure:
+### チャンピオン情報
+
+- URL: `https://game.gtimg.cn/images/lgamem/act/lrlib/js/heroList/hero_list.js`
 
 ```ts
-// main information of champion
+// チャンピオンの基本情報
 type Hero = {
-  heroId: string;
-  name: string;
-  title: string;
-  roles: string[];
-  lane: string;
-  intro: string;
-  avatar: string;
-  card: string;
-  poster: string;
-  highlightprice: string;
-  couponprice: string;
-  alias: string;
-  tags: string;
-  searchkey: string;
-  isWeekFree: string;
-  difficultyL: string;
-  damage: string;
-  surviveL: string;
-  assistL: string;
+  heroId: string; // チャンピオンID
+  name: string; // 名前
+  title: string; // タイトル
+  roles: string[]; // ロール
+  lane: string; // レーン
+  intro: string; // 説明
+  avatar: string; // アバター画像
+  card: string; // カード画像
+  poster: string; // ポスター画像
+  highlightprice: string; // ハイライト価格
+  couponprice: string; // クーポン価格
+  alias: string; // 別名
+  tags: string; // タグ
+  searchkey: string; // 検索キー
+  isWeekFree: string; // 今週の無料チャンピオン
+  difficultyL: string; // 難易度
+  damage: string; // ダメージ
+  surviveL: string; // 生存能力
+  assistL: string; // アシスト
 };
 
 type HeroList = {
   [key: string]: Hero;
 };
 
-// api structure
 type HeroData = {
   heroList: HeroList;
 };
 ```
 
-- Winrate(❌not used in this repo): `https://mlol.qt.qq.com/go/lgame_battle_info/hero_rank_list_v2`
-  - Structure:
+### 勝率情報（このリポジトリでは未使用）
+
+- URL: `https://mlol.qt.qq.com/go/lgame_battle_info/hero_rank_list_v2`
 
 ```ts
-// main information of winrate 
 interface HeroStats {
   id: number;
   position: string;
@@ -121,7 +125,6 @@ interface HeroStats {
   win_rate_percent: string;
 }
 
-// each lane
 interface PositionStats {
   [key: string]: HeroStats[];
 }
@@ -130,17 +133,15 @@ interface Data {
   [key: string]: PositionStats;
 }
 
-// api structure
 interface JsonStructure {
   result: number;
   data: Data;
 }
 ```
 
-## URL and structure of my champion data (JP)
+## 日本語チャンピオンデータの URL と構造 🇯🇵
 
 - URL: `https://ry2x.github.io/wildrift_data/champions.json`
-  - Structure:
 
 ```ts
 interface Champion {
@@ -167,5 +168,4 @@ interface Champion {
 interface Champions {
   [key: string]: Champion;
 }
-
 ```
