@@ -47,6 +47,7 @@ function mergeChampionData(hero, cnHero) {
         };
     return {
         ...hero,
+        is_wr: hero.is_wr || !!cnHero,
         is_free: cnHero?.isWeekFree === '1',
         difficult: cnHero ? Number(cnHero.difficultyL) : 0,
         damage: cnHero ? Number(cnHero.damage) : 0,
