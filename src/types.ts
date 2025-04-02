@@ -73,6 +73,26 @@ export interface Config {
   urlCN: string;
   urlChamp: string;
   folderName: string;
+  outputFileName: string;
+  laneInfo: {
+    mid: string;
+    jg: string;
+    top: string;
+    sup: string;
+    ad: string;
+  };
+  errorMessages: {
+    FOLDER_CREATE: string;
+    DATA_FETCH: string;
+    JSON_WRITE: string;
+    DATA_EXPORT: string;
+    PROCESS_ERROR: string;
+  };
+  successMessages: {
+    FOLDER_CREATE: string;
+    JSON_WRITE: string;
+    PROCESS_COMPLETE: string;
+  };
 }
 
 // レーン情報

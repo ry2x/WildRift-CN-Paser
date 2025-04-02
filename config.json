@@ -1,5 +1,25 @@
 {
   "urlCN": "https://game.gtimg.cn/images/lgamem/act/lrlib/js/heroList/hero_list.js",
   "urlChamp": "https://ry2x.github.io/wildrift_data/champions.json",
-  "folderName": "public"
+  "folderName": "public",
+  "outputFileName": "hero.json",
+  "laneInfo": {
+    "mid": "中路",
+    "jg": "打野",
+    "top": "单人路",
+    "sup": "辅助",
+    "ad": "射手"
+  },
+  "errorMessages": {
+    "FOLDER_CREATE": "出力フォルダの作成に失敗しました❌",
+    "DATA_FETCH": "データの取得に失敗しました❌",
+    "JSON_WRITE": "JSONファイルの書き込みに失敗しました❌",
+    "DATA_EXPORT": "データのエクスポートに失敗しました❌",
+    "PROCESS_ERROR": "処理中にエラーが発生しました❌"
+  },
+  "successMessages": {
+    "FOLDER_CREATE": "出力フォルダを作成しました✨",
+    "JSON_WRITE": "JSONファイルの出力に成功しました✨",
+    "PROCESS_COMPLETE": "すべての処理が完了しました！🎉"
+  }
 }

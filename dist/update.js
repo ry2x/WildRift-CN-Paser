@@ -1,48 +1,41 @@
 import axios from 'axios';
 import { readFileSync, mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
-const CONFIG_PATH = 'config.json';
-const ERROR_MESSAGES = {
-    CONFIG_READ: '設定ファイルの読み込みに失敗しました',
-    FOLDER_CREATE: '出力フォルダの作成に失敗しました',
-    DATA_FETCH: 'データの取得に失敗しました',
-    JSON_WRITE: 'JSONファイルの書き込みに失敗しました',
-};
-const loadConfig = () => {
+function loadConfig() {
     try {
-        const configPath = join(process.cwd(), CONFIG_PATH);
+        const configPath = join(process.cwd(), 'config.json');
         return JSON.parse(readFileSync(configPath, 'utf8'));
     }
     catch (error) {
-        console.error(ERROR_MESSAGES.CONFIG_READ, error);
+        console.error('設定ファイルの読み込みに失敗しました', error);
         throw error;
     }
-};
+}
 const config = loadConfig();
-const extractChampionNameFromPoster = (posterUrl) => {
+function extractChampionNameFromPoster(posterUrl) {
     const match = posterUrl.match(/\/([A-Za-z]+)_\d+\.jpg$/);
     return match ? match[1] : null;
-};
-const parseLaneInfo = (lane) => {
+}
+function parseLaneInfo(lane) {
     const lanes = lane.split(';');
     return {
-        is_mid: lanes.includes('中路'),
-        is_jg: lanes.includes('打野'),
-        is_top: lanes.includes('单人路'),
-        is_sup: lanes.includes('辅助'),
-        is_ad: lanes.includes('射手'),
+        is_mid: lanes.includes(config.laneInfo.mid),
+        is_jg: lanes.includes(config.laneInfo.jg),
+        is_top: lanes.includes(config.laneInfo.top),
+        is_sup: lanes.includes(config.laneInfo.sup),
+        is_ad: lanes.includes(config.laneInfo.ad),
     };
-};
-const fetchData = async (url) => {
+}
+async function fetchData(url) {
     try {
         return await axios.get(url);
     }
     catch (error) {
-        console.error(ERROR_MESSAGES.DATA_FETCH, error);
+        console.error(config.errorMessages.DATA_FETCH, error);
         throw error;
     }
-};
-const mergeChampionData = (hero, cnHero) => {
+}
+function mergeChampionData(hero, cnHero) {
     const laneInfo = cnHero
         ? parseLaneInfo(cnHero.lane)
         : {
@@ -62,54 +55,56 @@ const mergeChampionData = (hero, cnHero) => {
         hero_id: cnHero ? Number(cnHero.heroId) : 0,
         ...laneInfo,
     };
-};
-const exportData = async () => {
+}
+async function exportData() {
     try {
         const [cnData, jpData] = await Promise.all([
             fetchData(config.urlCN),
             fetchData(config.urlChamp),
         ]);
-        return Object.values(jpData.data).map((hero) => {
-            const cnHero = Object.values(cnData.data.heroList).find((h) => extractChampionNameFromPoster(h.poster) === hero.id);
+        return Object.values(jpData.data).map(function (hero) {
+            const cnHero = Object.values(cnData.data.heroList).find(function (h) {
+                return extractChampionNameFromPoster(h.poster) === hero.id;
+            });
             return mergeChampionData(hero, cnHero);
         });
     }
     catch (error) {
-        console.error('データのエクスポートに失敗しました', error);
+        console.error(config.errorMessages.DATA_EXPORT, error);
         throw error;
     }
-};
-const createOutputDirectory = async () => {
+}
+async function createOutputDirectory() {
     try {
         mkdirSync(config.folderName, { recursive: true });
-        console.log('出力フォルダを作成しました✨');
+        console.log(config.successMessages.FOLDER_CREATE);
     }
     catch (error) {
-        console.error(ERROR_MESSAGES.FOLDER_CREATE, error);
+        console.error(config.errorMessages.FOLDER_CREATE, error);
         throw error;
     }
-};
-const writeJsonFile = async (data) => {
+}
+async function writeJsonFile(data) {
     try {
-        const outputPath = join(config.folderName, 'hero.json');
+        const outputPath = join(config.folderName, config.outputFileName);
         writeFileSync(outputPath, JSON.stringify(data, null, 2), 'utf-8');
-        console.log('JSONファイルの出力に成功しました✨');
+        console.log(config.successMessages.JSON_WRITE);
     }
     catch (error) {
-        console.error(ERROR_MESSAGES.JSON_WRITE, error);
+        console.error(config.errorMessages.JSON_WRITE, error);
         throw error;
     }
-};
-const main = async () => {
+}
+async function main() {
     try {
         await createOutputDirectory();
         const data = await exportData();
         await writeJsonFile(data);
-        console.log('すべての処理が完了しました！🎉');
+        console.log(config.successMessages.PROCESS_COMPLETE);
     }
     catch (error) {
-        console.error('処理中にエラーが発生しました💦', error);
+        console.error(config.errorMessages.PROCESS_ERROR, error);
         process.exit(1);
     }
-};
+}
 main();
