@@ -1,5 +1,8 @@
 # WildRift Champion Data 🎮
 
+# このプロジェクトは[WildRift-Merged-Champion-Data](https://github.com/ry2x/WildRift-Merged-Champion-Data)へ移管しました。
+# This Project Moved to [WildRift-Merged-Champion-Data](https://github.com/ry2x/WildRift-Merged-Champion-Data).
+
 > English version is available [here](https://github.com/ry2x/WildRift-Champs/blob/master/readme.en.md)
 
 ## 概要 📝
